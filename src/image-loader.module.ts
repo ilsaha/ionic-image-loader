@@ -21,7 +21,7 @@ import {File} from '@ionic-native/file/ngx';
 export class IonicImageLoader {
   static forRoot(): ModuleWithProviders {
     return {
-      ngModule: this,
+      ngModule: IonicImageLoader,
       providers: [
         ImageLoaderConfig,
         ImageLoader,
