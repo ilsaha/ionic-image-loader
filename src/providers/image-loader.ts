@@ -1,10 +1,10 @@
-import { HttpClient }             from '@angular/common/http';
-import { Injectable }             from '@angular/core';
-import { File, FileEntry }        from '@ionic-native/file';
-import { Platform }               from 'ionic-angular';
-import { fromEvent }              from 'rxjs/observable/fromEvent';
-import { first }                   from 'rxjs/operators';
-import { ImageLoaderConfig }       from './image-loader-config';
+import {Injectable} from '@angular/core';
+import {ImageLoaderConfig} from './image-loader-config';
+import {HttpClient} from '@angular/common/http';
+import {File, FileEntry} from '@ionic-native/file/ngx';
+import {Platform} from '@ionic/angular';
+import {fromEvent} from 'rxjs';
+import {first} from 'rxjs/operators';
 
 interface IndexItem {
   name: string;
@@ -132,7 +132,7 @@ export class ImageLoader {
   }
 
   getFileCacheDirectory() {
-    if (this.config.cacheDirectoryType == 'data') {
+    if (this.config.cacheDirectoryType === 'data') {
       return this.file.dataDirectory;
     }
     return this.file.cacheDirectory;
@@ -322,53 +322,55 @@ export class ImageLoader {
 
     if (this.currentlyProcessing[currentItem.imageUrl] === undefined) {
       this.currentlyProcessing[currentItem.imageUrl] = new Promise((resolve, reject) => {
-        // process more items concurrently if we can
-        if (this.canProcess) { this.processQueue(); }
+          // process more items concurrently if we can
+          if (this.canProcess) {
+            this.processQueue();
+          }
 
-        const localDir = this.getFileCacheDirectory() + this.config.cacheDirectoryName + '/';
-        const fileName = this.createFileName(currentItem.imageUrl);
+          const localDir = this.getFileCacheDirectory() + this.config.cacheDirectoryName + '/';
+          const fileName = this.createFileName(currentItem.imageUrl);
 
-        this.http.get(currentItem.imageUrl, {
-          responseType: 'blob',
-          headers: this.config.httpHeaders
-        }).subscribe(
-          (data: Blob) => {
-            this.file.writeFile(localDir, fileName, data, {replace: true}).then((file: FileEntry) => {
-              if (this.isCacheSpaceExceeded) {
-                this.maintainCacheSize();
-              }
-              this.addFileToIndex(file).then(() => {
-                this.getCachedImagePath(currentItem.imageUrl).then((localUrl) => {
-                  currentItem.resolve(localUrl);
-                  resolve();
-                  done();
+          this.http.get(currentItem.imageUrl, {
+            responseType: 'blob',
+            headers: this.config.httpHeaders
+          }).subscribe(
+            (data: Blob) => {
+              this.file.writeFile(localDir, fileName, data, {replace: true}).then((file: FileEntry) => {
+                if (this.isCacheSpaceExceeded) {
                   this.maintainCacheSize();
+                }
+                this.addFileToIndex(file).then(() => {
+                  this.getCachedImagePath(currentItem.imageUrl).then((localUrl) => {
+                    currentItem.resolve(localUrl);
+                    resolve();
+                    done();
+                    this.maintainCacheSize();
+                  });
                 });
+              }).catch((e) => {
+                // Could not write image
+                error(e);
+                reject(e);
               });
-            }).catch((e) => {
-              // Could not write image
+            },
+            (e) => {
+              // Could not get image via httpClient
               error(e);
               reject(e);
             });
-          },
-          (e) => {
-            // Could not get image via httpClient
-            error(e);
-            reject(e);
-          });
         }
       ).catch((e) => this.throwError(e));
     } else {
       // Prevented same Image from loading at the same time
       this.currentlyProcessing[currentItem.imageUrl].then(() => {
-        this.getCachedImagePath(currentItem.imageUrl).then(localUrl => {
-          currentItem.resolve(localUrl);
+          this.getCachedImagePath(currentItem.imageUrl).then(localUrl => {
+            currentItem.resolve(localUrl);
+          });
+          done();
+        },
+        (e) => {
+          error(e);
         });
-        done();
-      },
-      (e) => {
-        error(e);
-      });
     }
   }
 
@@ -627,7 +629,7 @@ export class ImageLoader {
    * @param replace {boolean} override directory if exists
    * @returns {Promise<DirectoryEntry|FileError>} Returns a promise that resolves if the directories were created, and rejects on error
    */
-  private createCacheDirectory(replace: boolean = false): Promise<any> {
+  private createCacheDirectory(replace: boolean = false): Promise[] {
     let cacheDirectoryPromise: Promise<any>, tempDirectoryPromise: Promise<any>;
 
     if (replace) {

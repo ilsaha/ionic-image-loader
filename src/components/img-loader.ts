@@ -1,7 +1,6 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2 } from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2} from '@angular/core';
+import {ImageLoader, ImageLoaderConfig} from '..';
 
-import { ImageLoader }       from '../providers/image-loader';
-import { ImageLoaderConfig } from '../providers/image-loader-config';
 
 const propMap: any = {
   display: 'display',
@@ -128,7 +127,7 @@ export class ImgLoaderComponent implements OnInit {
   set src(imageUrl: string) {
     this._src = this.processImageUrl(imageUrl);
     this.updateImage(this._src);
-  };
+  }
 
   ngOnInit(): void {
     if (this.fallbackAsPlaceholder && this.fallbackUrl) {
@@ -176,7 +175,7 @@ export class ImgLoaderComponent implements OnInit {
       }
 
       // append timestamp at the end to make URL unique
-      imageUrl += 'cache_buster=' + Date.now();
+      imageUrl += 'cache_buster=' + (new Date()).getTime();
     }
 
     return imageUrl;
@@ -227,7 +226,7 @@ export class ImgLoaderComponent implements OnInit {
         `url("${imageUrl || this.fallbackUrl}")`,
       );
     }
-    if(stopLoading) {
+    if (stopLoading) {
       this.load.emit(this);
     }
   }

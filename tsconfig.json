@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "module": "es2015",
+    "module": "esnext",
     "target": "es5",
     "moduleResolution": "node",
     "sourceMap": true,
-    "declaration": true,
+    "declaration": false,
     "noImplicitAny": false,
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "importHelpers": true,
     "lib": [
-      "dom",
-      "es2015"
+      "es2018",
+      "dom"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
     ],
     "outDir": "dist",
     "rootDir": "./src"
